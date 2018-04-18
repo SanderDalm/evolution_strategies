@@ -1,0 +1,13 @@
+{
+"env_name": "CartPole-v0",
+"input_size": 4,
+ "output_size": 2,
+ "hidden_units": 256,
+ "lower_bound": "None",
+ "upper_bound": "None",
+ "sigma": 0.02,
+ "alpha": 0.1,
+ "num_generations": 50,
+ "N": 100,
+ "discrete": true
+}
