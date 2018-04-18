@@ -1,7 +1,7 @@
 import numpy as np
 from optimizers import Adam
 
-class EsLearner:
+class ES_Learner:
 
     def __init__(self,
                  input_dims,

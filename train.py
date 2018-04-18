@@ -5,7 +5,7 @@ import numpy as np
 import gym
 import matplotlib.pyplot as plt
 
-from EsLearner import EsLearner
+from es_learner import EsLearner
 
 
 config = json.load(open('config/humanoid.json', 'rb'))
