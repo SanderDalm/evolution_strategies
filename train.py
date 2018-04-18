@@ -1,43 +1,37 @@
+import pickle
+import json
+
+import numpy as np
+import gym
+import matplotlib.pyplot as plt
+
 from EsLearner import EsLearner
 
 
-import gym
-import matplotlib.pyplot as plt
-import pickle
-env = gym.make("HalfCheetah-v1") #Humanoid-v1
+config = json.load(open('config/humanoid.json', 'rb'))
+env = gym.make(config['env_name'])
 
-INPUT_SIZE = 17 #376 cheetah
-OUTPUT_SIZE = 6#17  cheetah
-HIDDEN_UNITS = 256
-LOWER_BOUND = -.4
-UPPER_BOUND = .4
-STD = .02
-LR = 1
-
-num_generations = 100
-N = 100
-
-learner = EsLearner(input_dims=INPUT_SIZE,
-                    output_dims=OUTPUT_SIZE,
-                    hidden_size=HIDDEN_UNITS,
-                    output_lower_bound=-1,
-                    output_upper_bound=1,
-                    sigma=STD,
-                    alpha=LR,
-                    pop=N,
+learner = EsLearner(input_dims=config['input_size'],
+                    output_dims=config['output_size'],
+                    hidden_size=config['hidden_units'],
+                    output_lower_bound=config['lower_bound'],
+                    output_upper_bound=config['upper_bound'],
+                    sigma=config['sigma'],
+                    alpha=config['alpha'],
+                    pop=config['N'],
                     env=env,
-                    discrete=False
+                    discrete=config['discrete']
                     )
 
 reward_list = []
-for gen in range(num_generations):
+for gen in range(config['num_generations']):
 
     rewards, params = learner.run_generation()
     reward_list.append(rewards)
     print('Mean reward after {} generations: {}'.format(gen, np.mean(rewards)))
     print('Mean W1: {}'.format(np.mean(np.abs(params['w1']))))
-    if gen % 100 == 0 or gen == num_generations-1:
-        pickle.dump(params, open('params/params_{}'.format(gen), 'wb'))
+    if gen % 100 == 0 or gen == config['num_generations']-1:
+        pickle.dump(params, open('params/params_{}_{}'.format(config['env_name'], gen), 'wb'))
 
 plt.plot(reward_list)
 
