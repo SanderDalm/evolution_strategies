@@ -5,13 +5,13 @@ import numpy as np
 import gym
 import matplotlib.pyplot as plt
 
-from es_learner import EsLearner
+from es_learner import ESLearner
 
 
 config = json.load(open('config/humanoid.json', 'rb'))
 env = gym.make(config['env_name'])
 
-learner = EsLearner(input_dims=config['input_size'],
+learner = ESLearner(input_dims=config['input_size'],
                     output_dims=config['output_size'],
                     hidden_size=config['hidden_units'],
                     output_lower_bound=config['lower_bound'],
@@ -23,6 +23,9 @@ learner = EsLearner(input_dims=config['input_size'],
                     discrete=config['discrete']
                     )
 
+params = pickle.load(open('params/Humanoid-v1_400', 'rb'))
+learner.load_params(params)
+
 reward_list = []
 for gen in range(config['num_generations']):
 
@@ -30,21 +33,22 @@ for gen in range(config['num_generations']):
     reward_list.append(rewards)
     print('Mean reward after {} generations: {}'.format(gen, np.mean(rewards)))
     print('Mean W1: {}'.format(np.mean(np.abs(params['w1']))))
-    if gen % 100 == 0 or gen == config['num_generations']-1:
-        pickle.dump(params, open('params/params_{}_{}'.format(config['env_name'], gen), 'wb'))
+    if gen % int(config['num_generations']/10) == 0 or gen == config['num_generations']-1:
+        pickle.dump(params, open('params/{}_{}'.format(config['env_name'], gen), 'wb'))
 
 plt.plot(reward_list)
+plt.show()
 
 for i in range(10):
     episode_reward = 0
     done = False
     observation = env.reset()
-    x = observation.reshape([INPUT_SIZE, 1])
+    x = observation.reshape([config['input_size'], 1])
     while not done:
         env.render()
         action = learner.model(x, params)
         observation, reward, done, info = env.step(action)
-        x = observation.reshape([INPUT_SIZE, 1])
+        x = observation.reshape([config['input_size'], 1])
         episode_reward += reward
-    print(reward)
+    print(episode_reward)
 env.close()

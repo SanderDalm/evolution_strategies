@@ -5,9 +5,9 @@
  "hidden_units": 256,
  "lower_bound": -0.4,
  "upper_bound": 0.4,
- "sigma": 0.02,
- "alpha": 0.1,
- "num_generations": 100,
+ "sigma": 0.1,
+ "alpha": 1,
+ "num_generations": 10,
  "N": 100,
  "discrete": false
 }

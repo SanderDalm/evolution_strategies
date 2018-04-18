@@ -1,7 +1,7 @@
 import numpy as np
 from optimizers import Adam
-
-class ES_Learner:
+from virtual_batch_norm import VirtualBatchNorm
+class ESLearner:
 
     def __init__(self,
                  input_dims,
@@ -37,6 +37,10 @@ class ES_Learner:
         #for key in self.params.keys():
         #    self.optimizers[key] = Adam()
 
+        #self.VBN = VirtualBatchNorm(params)
+
+    def load_params(self, params):
+        self.params = params
 
     def generate_noise(self, x):
         noise = np.random.normal(0, self.sigma, [x.shape[0], x.shape[1]])
@@ -114,7 +118,7 @@ class ES_Learner:
             update = self.compute_update(noises[key], ranking)
             self.update_params(update, key)
 
-        return rewards, self.params
+        return np.mean(rewards), self.params
 
 
     def compute_update(self, noises, ranking):
