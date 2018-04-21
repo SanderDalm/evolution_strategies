@@ -1,6 +1,6 @@
 class VirtualBatchNorm:
 
-    def __init__(self, params):
+    def __init__(self):
 
         """Batch norm normalizes the activations of each units and adds
         learnable parameters gamma and beta to scale them back.
@@ -8,30 +8,25 @@ class VirtualBatchNorm:
 
         In VBN, we collect a reference batch every X steps and simply use those params"""
 
+        self.means = dict()
+        self.stds = dict()
 
-        self.running_avg = dict()
-        self.running_std = dict()
+    def update_stats(self, mean, std, key):
 
-        for key in params.keys():
-            self.running_avg[key] = 0
-            self.running_std[key] = 0
-
-    def update_stats(self, activations):
-
-        # .9 * self.running_avg[key] + .1 * activations
-        pass
+        self.means[key] = mean
+        self.stds[key] = std
 
     def normalize_activations(self, activations, key):
 
-        activations -= self.running_avg[key]
-        activations /= self.running_std[key]
+        activations -= self.means[key]
+        activations /= self.stds[key]
         return activations
 
     def denormalize_activations(self, activations, key):
 
         """Just transform back using the running statistics."""
-        activations *= self.running_std[key]
-        activations += self.running_avg[key]
+        activations *= self.stds[key]
+        activations += self.means[key]
         return activations
 
 

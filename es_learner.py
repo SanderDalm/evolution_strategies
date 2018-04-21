@@ -1,5 +1,5 @@
 import numpy as np
-from optimizers import Adam
+from optimizers import AdamOptimizer
 from virtual_batch_norm import VirtualBatchNorm
 class ESLearner:
 
@@ -7,13 +7,15 @@ class ESLearner:
                  input_dims,
                  output_dims,
                  hidden_size,
+                 std,
                  output_lower_bound,
                  output_upper_bound,
                  sigma,
                  alpha,
                  pop,
                  env,
-                 discrete):
+                 discrete,
+                 use_VBN=True):
 
         self.input_dims = input_dims
         self.output_dims = output_dims
@@ -25,22 +27,27 @@ class ESLearner:
         self.env = env
         self.discrete = discrete
         self.params =   {
-                        'w1': np.random.normal(0, .5, [input_dims, hidden_size]),
+                        'w1': np.random.normal(0, std, [input_dims, hidden_size]),
                         'b1': np.zeros([hidden_size, 1]),
-                        'w2': np.random.normal(0, .5, [hidden_size, hidden_size]),
+                        'w2': np.random.normal(0, std, [hidden_size, hidden_size]),
                         'b2': np.zeros([hidden_size, 1]),
-                        'w3': np.random.normal(0, .5, [hidden_size, output_dims]),
+                        'w3': np.random.normal(0, std, [hidden_size, output_dims]),
                         'b3': np.zeros([output_dims, 1])
                         }
 
-        #self.optimizers = dict()
-        #for key in self.params.keys():
-        #    self.optimizers[key] = Adam()
+        self.optimizers = dict()
+        for key in self.params.keys():
+           self.optimizers[key] = AdamOptimizer(self.params[key])
 
-        #self.VBN = VirtualBatchNorm(params)
+        self.use_VBN = use_VBN
+        if self.use_VBN:
+            self.VBN = VirtualBatchNorm()
+            self.collect_batch_norm_statistics()
 
-    def load_params(self, params):
+
+    def load_params(self, params, VBN):
         self.params = params
+        self.VBN = VBN
 
     def generate_noise(self, x):
         noise = np.random.normal(0, self.sigma, [x.shape[0], x.shape[1]])
@@ -48,13 +55,37 @@ class ESLearner:
 
 
     def activation(self, x):
-        return np.maximum(0, x)
+        return np.tanh(x)
+        #return np.maximum(0, x)
 
 
-    def model(self, x, params):
+    def model_no_VBN(self, x, params):
 
-        a1 = self.activation(np.matmul(params['w1'].T, x) + params['b1'])
-        a2 = self.activation(np.matmul(params['w2'].T, a1) + params['b2'])
+        z1 = np.matmul(params['w1'].T, x) + params['b1']
+        a1 = self.activation(z1)
+
+        z2 = np.matmul(params['w2'].T, a1) + params['b2']
+        a2 = self.activation(z2)
+
+        if self.discrete:
+            return np.argmax(self.activation(np.matmul(params['w3'].T, a2) + params['b3'])), z1, z2
+        else:
+            return np.clip(np.matmul(params['w3'].T, a2) + params['b3'], self.output_lower_bound,
+                           self.upper_lower_bound), z1, z2
+
+
+    def model_VBN(self, x, params):
+
+        z1 = np.matmul(params['w1'].T, x) + params['b1']
+        z1 = self.VBN.normalize_activations(z1, 'z1')
+        a1 = self.activation(z1)
+        a1 = self.VBN.denormalize_activations(a1, 'z1')
+
+        z2 = np.matmul(params['w2'].T, a1) + params['b2']
+        z2 = self.VBN.normalize_activations(z2, 'z2')
+        a2 = self.activation(z2)
+        a2 = self.VBN.denormalize_activations(a2, 'z2')
+
         if self.discrete:
             return np.argmax(self.activation(np.matmul(params['w3'].T, a2) + params['b3']))
         else:
@@ -69,12 +100,50 @@ class ESLearner:
         x = observation.reshape([self.input_dims, 1])
 
         while not done:
-            action = self.model(x, params)
+            if self.use_VBN:
+                action = self.model_VBN(x, params)
+            else:
+                action, _, _ = self.model_no_VBN(x, params)
             observation, reward, done, info = self.env.step(action)
             x = observation.reshape([self.input_dims, 1])
             episode_reward += reward
 
         return episode_reward
+
+
+    def collect_batch_norm_statistics(self):
+
+        x_list = []
+        z1_list = []
+        z2_list = []
+
+        print('Collecting virtual batchnorm statistics.')
+
+        for i in range(self.pop):
+            done = False
+            observation = self.env.reset()
+            x = observation.reshape([self.input_dims, 1])
+            x_list.append(x)
+
+            while not done:
+                action, z1, z2 = self.model_no_VBN(x, self.params)
+                observation, reward, done, info = self.env.step(action)
+                z1_list.append(z1)
+                z2_list.append(z2)
+                x = observation.reshape([self.input_dims, 1])
+                x_list.append(x)
+
+        z1 = np.array(z1_list)
+        z2 = np.array(z2_list)
+
+        z1_mean = np.mean(z1, axis=0)
+        z2_mean = np.mean(z2, axis=0)
+
+        z1_std = np.std(z1, axis=0)
+        z2_std = np.std(z2, axis=0)
+
+        self.VBN.update_stats(z1_mean, z1_std, 'z1')
+        self.VBN.update_stats(z2_mean, z2_std, 'z2')
 
 
     def compute_ranks(self, x):
@@ -134,4 +203,6 @@ class ESLearner:
 
     def update_params(self, update, key):
 
-        self.params[key] += update * (self.alpha/(self.pop*self.sigma))
+        update *= (self.alpha / (self.pop * self.sigma))
+        update = self.optimizers[key].compute_update(update)
+        self.params[key] += update

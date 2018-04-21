@@ -3,11 +3,13 @@
 "input_size": 4,
  "output_size": 2,
  "hidden_units": 256,
+ "initialization_std": 0.5,
  "lower_bound": "None",
  "upper_bound": "None",
  "sigma": 0.1,
  "alpha": 1,
  "num_generations": 20,
  "N": 100,
- "discrete": true
+ "discrete": true,
+ "VBN": true
 }
