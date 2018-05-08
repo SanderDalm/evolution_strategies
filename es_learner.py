@@ -28,9 +28,13 @@ class ESLearner:
         self.discrete = discrete
         self.params =   {
                         'w1': np.random.normal(0, std, [input_dims, hidden_size]),
+                        'gamma1': np.random.normal(1, std, [hidden_size, 1]),
                         'b1': np.zeros([hidden_size, 1]),
+
                         'w2': np.random.normal(0, std, [hidden_size, hidden_size]),
+                        'gamma2': np.random.normal(1, std, [hidden_size, 1]),
                         'b2': np.zeros([hidden_size, 1]),
+
                         'w3': np.random.normal(0, std, [hidden_size, output_dims]),
                         'b3': np.zeros([output_dims, 1])
                         }
@@ -42,12 +46,12 @@ class ESLearner:
         self.use_VBN = use_VBN
         if self.use_VBN:
             self.VBN = VirtualBatchNorm()
-            self.collect_batch_norm_statistics()
 
 
-    def load_params(self, params, VBN):
+    def load_params(self, params, VBN=None):
         self.params = params
-        self.VBN = VBN
+        if VBN:
+            self.VBN = VBN
 
     def generate_noise(self, x):
         noise = np.random.normal(0, self.sigma, [x.shape[0], x.shape[1]])
@@ -76,15 +80,16 @@ class ESLearner:
 
     def model_VBN(self, x, params):
 
-        z1 = np.matmul(params['w1'].T, x) + params['b1']
+        z1 = np.matmul(params['w1'].T, x)
         z1 = self.VBN.normalize_activations(z1, 'z1')
+        z1 = self.VBN.denormalize_activations(z1, params['gamma1'], params['b1'])
         a1 = self.activation(z1)
-        a1 = self.VBN.denormalize_activations(a1, 'z1')
 
-        z2 = np.matmul(params['w2'].T, a1) + params['b2']
+
+        z2 = np.matmul(params['w2'].T, a1)
         z2 = self.VBN.normalize_activations(z2, 'z2')
+        z2 = self.VBN.denormalize_activations(z2, params['gamma2'], params['b2'])
         a2 = self.activation(z2)
-        a2 = self.VBN.denormalize_activations(a2, 'z2')
 
         if self.discrete:
             return np.argmax(self.activation(np.matmul(params['w3'].T, a2) + params['b3']))

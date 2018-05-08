@@ -22,11 +22,11 @@ class VirtualBatchNorm:
         activations /= self.stds[key]
         return activations
 
-    def denormalize_activations(self, activations, key):
+    def denormalize_activations(self, activations, gamma, beta):
 
         """Just transform back using the running statistics."""
-        activations *= self.stds[key]
-        activations += self.means[key]
+        activations *= gamma
+        activations += beta
         return activations
 
 
