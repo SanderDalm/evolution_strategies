@@ -1,15 +1,14 @@
 {
-"env_name": "CartPole-v0",
+"env_name": "CartPole-v1",
 "input_size": 4,
  "output_size": 2,
  "hidden_units": 256,
- "initialization_std": 0.5,
+ "initialization_std": 0,
  "lower_bound": "None",
  "upper_bound": "None",
  "sigma": 0.1,
  "alpha": 1,
- "num_generations": 20,
+ "num_generations": 30,
  "N": 100,
- "discrete": true,
- "VBN": true
+ "discrete": true
 }
