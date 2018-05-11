@@ -8,7 +8,7 @@
  "lower_bound": -1,
  "upper_bound": 1,
  "sigma": 0.01,
- "alpha": 0.01,
+ "alpha": 0.05,
  "num_generations": 10000,
  "N": 100,
  "discrete": false

@@ -28,18 +28,21 @@ learner = ESLearner(input_dims=config['input_size'],
                     discrete=config['discrete']
                     )
 
+#params = pickle.load(open('params/TEST', 'rb'))
 #params = pickle.load(open('params/Humanoid', 'rb'))
 #learner.load_params(params)
 
 reward_list = []
-num_gens = config['num_generations']
-for gen in range(num_gens):
 
+gen = 0
+while True:
+
+    gen += 1
     rewards, params = learner.run_generation()
     reward_list.append(rewards)
     print('Mean reward after {} generations: {}'.format(gen, np.mean(rewards)))
     print('Mean W1: {}'.format(np.mean(np.abs(params['w1']))))
-    if gen % 1000 == 0 or gen == num_gens-1:
+    if gen % 1000 == 0:
         pickle.dump(params, open('params/{}_{}'.format(config['env_name'], gen), 'wb'))
 
 plt.plot(reward_list)
@@ -58,4 +61,4 @@ for i in range(1):
         x = observation.reshape([config['input_size'], 1])
         episode_reward += reward
     print(episode_reward)
-print('Mean W1: {}'.format(np.mean(np.abs(action))))
+print('Mean action: {}'.format(np.mean(np.abs(action))))
