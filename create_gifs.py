@@ -1,14 +1,11 @@
-import pickle
+import imageio
 import json
-from time import sleep
-
-
-import numpy as np
-import roboschool
-import gym
-import matplotlib.pyplot as plt
+import pickle
 from OpenGL import GLU
 
+import numpy as np
+import gym
+import roboschool
 
 from es_learner import ESLearner
 
@@ -32,23 +29,31 @@ learner = ESLearner(input_dims=config['input_size'],
                     )
 
 params = pickle.load(open('params/RoboschoolHumanoid-v1_25000', 'rb'))
-#params = pickle.load(open('params/Humanoid', 'rb'))
 learner.load_params(params)
 
-# reward_list = []
-# gen = 22001
-# while True:
-#
-#     gen += 1
-#     rewards, params = learner.run_generation()
-#     reward_list.append(rewards)
-#     print('Mean reward after {} generations: {}'.format(gen, np.mean(rewards)))
-#     print('Mean W1: {}'.format(np.mean(np.abs(params['w1']))))
-#     if gen % 1000 == 0:
-#         pickle.dump(params, open('params/{}_{}'.format(config['env_name'], gen), 'wb'))
 
-#avg_rewards = [np.mean(reward_list[index-100:index]) if index >= 100 else 0 for index, _ in enumerate(reward_list)]
-#avg_rewards = avg_rewards[100:]
-#plt.plot(avg_rewards)
-#plt.show()
+def render_episode(create_gif=True):
 
+    episode_reward = 0
+    done = False
+    observation = env.reset()
+    x = observation.reshape([config['input_size'], 1])
+    frames = []
+    while not done:
+        if create_gif:
+            frame = env.render(mode='rgb_array')
+        else:
+            frame = env.render()
+        frames.append(frame)
+        action = learner.model(x, learner.params)
+        observation, reward, done, info = env.step(action)
+        x = observation.reshape([config['input_size'], 1])
+        episode_reward += reward
+    print(episode_reward)
+    print('Mean action: {}'.format(np.mean(np.abs(action))))
+
+    if create_gif:
+        frames = [frame for index, frame in enumerate(frames) if index % 3 == 0]
+        imageio.mimsave('episode.gif', frames)
+
+render_episode(create_gif=True)
