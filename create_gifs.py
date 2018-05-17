@@ -28,7 +28,7 @@ learner = ESLearner(input_dims=config['input_size'],
                     discrete=config['discrete']
                     )
 
-params = pickle.load(open('params/RoboschoolHumanoid-v1_25000', 'rb'))
+params = pickle.load(open('params/RoboschoolHumanoid-v1_18000', 'rb'))
 learner.load_params(params)
 
 
