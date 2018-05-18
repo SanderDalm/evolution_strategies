@@ -29,7 +29,7 @@ learner = ESLearner(input_dims=config['input_size'],
                     discrete=config['discrete']
                     )
 
-params = pickle.load(open('params/werk_18mei', 'rb'))
+params = pickle.load(open('params/thuis_18mei', 'rb'))
 #params = pickle.load(open('params/Humanoid', 'rb'))
 learner.load_params(params)
 
@@ -49,6 +49,7 @@ while True:
         avg_rewards = avg_rewards[100:]
         plt.plot(avg_rewards)
         plt.savefig('progress/progress{}.png'.format(gen))
+        plt.clf()
 
     if gen % 1000 == 0:
         pickle.dump(params, open('params/{}_{}'.format(config['env_name'], gen), 'wb'))

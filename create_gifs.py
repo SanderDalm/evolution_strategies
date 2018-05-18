@@ -58,12 +58,12 @@ def render_episode(mode=None):
 
     return episode_reward
 
-#score = render_episode(mode='create_gif')
+score = render_episode(mode='create_gif')
 
-scores = []
-for i in range(100):
-    score = render_episode()
-    print(i, score)
-    scores.append(score)
-print('Mean score:')
-print(np.mean(scores))
+# scores = []
+# for i in range(100):
+#     score = render_episode()
+#     print(i, score)
+#     scores.append(score)
+# print('Mean score:')
+# print(np.mean(scores))
