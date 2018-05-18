@@ -28,11 +28,11 @@ learner = ESLearner(input_dims=config['input_size'],
                     discrete=config['discrete']
                     )
 
-params = pickle.load(open('params/RoboschoolHumanoid-v1_18000', 'rb'))
+params = pickle.load(open('params/werk_18mei', 'rb'))
 learner.load_params(params)
 
 
-def render_episode(create_gif=True):
+def render_episode(mode=None):
 
     episode_reward = 0
     done = False
@@ -40,20 +40,30 @@ def render_episode(create_gif=True):
     x = observation.reshape([config['input_size'], 1])
     frames = []
     while not done:
-        if create_gif:
+        if mode == 'create_gif':
             frame = env.render(mode='rgb_array')
-        else:
+            frames.append(frame)
+        if mode == 'render':
             frame = env.render()
-        frames.append(frame)
+            frames.append(frame)
+
         action = learner.model(x, learner.params)
         observation, reward, done, info = env.step(action)
         x = observation.reshape([config['input_size'], 1])
         episode_reward += reward
-    print(episode_reward)
-    print('Mean action: {}'.format(np.mean(np.abs(action))))
 
-    if create_gif:
+    if mode == 'create_gif':
         frames = [frame for index, frame in enumerate(frames) if index % 3 == 0]
         imageio.mimsave('episode.gif', frames)
 
-render_episode(create_gif=True)
+    return episode_reward
+
+#score = render_episode(mode='create_gif')
+
+scores = []
+for i in range(100):
+    score = render_episode()
+    print(i, score)
+    scores.append(score)
+print('Mean score:')
+print(np.mean(scores))
