@@ -2,6 +2,7 @@ import imageio
 import json
 import pickle
 from OpenGL import GLU
+import matplotlib.pyplot as plt
 
 import numpy as np
 import gym
@@ -28,9 +29,9 @@ learner = ESLearner(input_dims=config['input_size'],
                     discrete=config['discrete']
                     )
 
-params = pickle.load(open('params/werk_18mei', 'rb'))
+#params = pickle.load(open('params/thuis_20mei', 'rb'))
+params = pickle.load(open('params/RoboschoolHumanoid-v1_56000', 'rb'))
 learner.load_params(params)
-
 
 def render_episode(mode=None):
 
@@ -53,12 +54,15 @@ def render_episode(mode=None):
         episode_reward += reward
 
     if mode == 'create_gif':
-        frames = [frame for index, frame in enumerate(frames) if index % 3 == 0]
+        frames = [frame for index, frame in enumerate(frames) if index % 5 == 0]
         imageio.mimsave('episode.gif', frames)
 
+    #plt.imshow(frames[0])
+    #plt.savefig('init1.png')
+    print(episode_reward)
     return episode_reward
 
-score = render_episode(mode='create_gif')
+score = render_episode('create_gif')
 
 # scores = []
 # for i in range(100):

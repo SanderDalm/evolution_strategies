@@ -29,12 +29,12 @@ learner = ESLearner(input_dims=config['input_size'],
                     discrete=config['discrete']
                     )
 
-params = pickle.load(open('params/thuis_18mei', 'rb'))
+params = pickle.load(open('params/thuis_20mei', 'rb'))
 #params = pickle.load(open('params/Humanoid', 'rb'))
 learner.load_params(params)
 
 reward_list = []
-gen = 0
+gen = 54800
 while True:
 
     gen += 1
@@ -54,5 +54,4 @@ while True:
     if gen % 1000 == 0:
         pickle.dump(params, open('params/{}_{}'.format(config['env_name'], gen), 'wb'))
 
-#pickle.dump(params, open('WERKVERSIE', 'wb'))
-
+#pickle.dump(params, open('thuis_20mei', 'wb'))
