@@ -11,7 +11,7 @@ from OpenGL import GLU
 from es_learner import ESLearner
 
 
-config = json.load(open('config/cheetah.json'))
+config = json.load(open('config/humanoid.json'))
 env = gym.make(config['env_name'])
 
 

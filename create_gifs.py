@@ -26,11 +26,11 @@ learner = ESLearner(input_dims=config['input_size'],
                     alpha=config['alpha'],
                     pop=config['N'],
                     env=env,
-                    discrete=config['discrete']
+                    discrete=config['discrete'],
+                    optimizer=config['optimizer']
                     )
 
-params = pickle.load(open('params/CartPole-v1_40', 'rb'))
-#params = pickle.load(open('params/RoboschoolHumanoid-v1_61000', 'rb'))
+params = pickle.load(open('params/RoboschoolHumanoid-v1_61000', 'rb'))
 learner.load_params(params)
 
 def render_episode(mode=None, filename=None):
@@ -64,7 +64,7 @@ def render_episode(mode=None, filename=None):
     print(episode_reward)
     return episode_reward
 
-score = render_episode('create_gif', 'cartpole_40.gif')
+score = render_episode('create_gif', 'humanoid_61000.gif')
 
 # scores = []
 # for i in range(100):
