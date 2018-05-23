@@ -11,7 +11,7 @@ from OpenGL import GLU
 from es_learner import ESLearner
 
 
-config = json.load(open('config/humanoid.json'))
+config = json.load(open('config/cheetah.json'))
 env = gym.make(config['env_name'])
 
 
@@ -26,15 +26,15 @@ learner = ESLearner(input_dims=config['input_size'],
                     alpha=config['alpha'],
                     pop=config['N'],
                     env=env,
-                    discrete=config['discrete']
+                    discrete=config['discrete'],
+                    optimizer=config['optimizer']
                     )
 
-params = pickle.load(open('params/thuis_20mei', 'rb'))
-#params = pickle.load(open('params/Humanoid', 'rb'))
-learner.load_params(params)
+#params = pickle.load(open('params/thuis_21mei', 'rb'))
+#learner.load_params(params)
 
 reward_list = []
-gen = 54800
+gen = 0
 while True:
 
     gen += 1
@@ -43,15 +43,17 @@ while True:
     print('Mean reward after {} generations: {}'.format(gen, np.mean(rewards)))
     print('Mean W1: {}'.format(np.mean(np.abs(params['w1']))))
 
-    if gen % 100 == 0:
+    if gen % 10 == 0:
         avg_rewards = [np.mean(reward_list[index - 100:index]) if index >= 100 else 0 for index, _ in
                        enumerate(reward_list)]
         avg_rewards = avg_rewards[100:]
         plt.plot(avg_rewards)
-        plt.savefig('progress/progress{}.png'.format(gen))
+        plt.savefig('progress/{}_progress_{}.png'.format(config['env_name'], gen))
         plt.clf()
 
-    if gen % 1000 == 0:
+    if gen % 10 == 0:
         pickle.dump(params, open('params/{}_{}'.format(config['env_name'], gen), 'wb'))
 
-#pickle.dump(params, open('thuis_20mei', 'wb'))
+#pickle.dump(params, open('thuis_21mei', 'wb'))
+plt.plot(reward_list)
+plt.show()

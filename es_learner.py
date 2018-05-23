@@ -1,5 +1,5 @@
 import numpy as np
-from optimizers import AdamOptimizer
+from optimizers import Optimizer
 
 
 class ESLearner:
@@ -16,7 +16,8 @@ class ESLearner:
                  alpha,
                  pop,
                  env,
-                 discrete):
+                 discrete,
+                 optimizer):
 
         self.input_dims = input_dims
         self.output_dims = output_dims
@@ -40,7 +41,10 @@ class ESLearner:
 
         self.optimizers = dict()
         for key in self.params.keys():
-           self.optimizers[key] = AdamOptimizer(self.params[key])
+            if optimizer == 'adam':
+                self.optimizers[key] = Optimizer(self.params[key], adam=True)
+            if optimizer == 'momentum':
+                self.optimizers[key] = Optimizer(self.params[key], adam=False)
 
 
     def load_params(self, params):

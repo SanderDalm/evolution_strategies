@@ -29,18 +29,20 @@ learner = ESLearner(input_dims=config['input_size'],
                     discrete=config['discrete']
                     )
 
-#params = pickle.load(open('params/thuis_20mei', 'rb'))
-params = pickle.load(open('params/RoboschoolHumanoid-v1_56000', 'rb'))
+params = pickle.load(open('params/CartPole-v1_40', 'rb'))
+#params = pickle.load(open('params/RoboschoolHumanoid-v1_61000', 'rb'))
 learner.load_params(params)
 
-def render_episode(mode=None):
+def render_episode(mode=None, filename=None):
 
     episode_reward = 0
     done = False
     observation = env.reset()
     x = observation.reshape([config['input_size'], 1])
     frames = []
+
     while not done:
+
         if mode == 'create_gif':
             frame = env.render(mode='rgb_array')
             frames.append(frame)
@@ -55,14 +57,14 @@ def render_episode(mode=None):
 
     if mode == 'create_gif':
         frames = [frame for index, frame in enumerate(frames) if index % 5 == 0]
-        imageio.mimsave('episode.gif', frames)
+        imageio.mimsave(filename, frames)
 
     #plt.imshow(frames[0])
     #plt.savefig('init1.png')
     print(episode_reward)
     return episode_reward
 
-score = render_episode('create_gif')
+score = render_episode('create_gif', 'cartpole_40.gif')
 
 # scores = []
 # for i in range(100):

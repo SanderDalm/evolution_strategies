@@ -11,5 +11,6 @@
  "alpha": 0.01,
  "num_generations": 10000,
  "N": 100,
- "discrete": false
+ "discrete": false,
+ "optimizer": "momentum"
 }
