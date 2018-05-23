@@ -59,8 +59,10 @@ def render_episode(mode=None, filename=None):
         frames = [frame for index, frame in enumerate(frames) if index % 5 == 0]
         imageio.mimsave(filename, frames)
 
-    #plt.imshow(frames[0])
-    #plt.savefig('init1.png')
+    #for index, frame in enumerate(frames):
+    #    if index < 100:
+    #        plt.imshow(frame)
+    #        plt.savefig('init{}.png'.format(index))
     print(episode_reward)
     return episode_reward
 
